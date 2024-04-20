@@ -1,38 +1,24 @@
+//API -1 GET 
 GET http://localhost:3000/todos/?status=TO%20DO
-
 ###
-GET http://localhost:3010/todos/?priority=HIGH
-
+GET http://localhost:3000/todos/?priority=HIGH
 ###
-GET http://localhost:3010/todos/?category=HOME
-
+GET http://localhost:3000/todos/?priority=HIGH&status=IN%20PROGRESS
 ###
-GET http://localhost:3010/todos/?priority=HIGH&status=DONE
-
+GET http://localhost:3000/todos/?search_q=Buy
 ###
-GET http://localhost:3010/todos/?category=WORK&status=DONE
+GET http://localhost:3000/todos/?category=WORK&status=DONE
+###GET http://localhost:3000/todos/?category=HOME
 
-###
-GET http://localhost:3010/todos/?category=LEARNING&priority=HIGH
+//API -2 GET todo 
+###GET http://localhost:3000/todos/4/
 
+//API -3 GET Agenda
 ###
-GET http://localhost:3010/todos/?search_q=learn
+GET http://localhost:3000/agenda/?date=2021-12-12
 
-###
-GET http://localhost:3010/todos/2/
-
-###
-GET http://localhost:3010/todos/agenda/?date=2020-12-22
-
-###
-PUT http://localhost:3010/todo/2
-Content-Type: application/json
-{
-  "status": "DONE"
-}
-
-###
-POST http://localhost:3010/todos/
+//API - 4 POST todo
+POST http://localhost:3000/todos/
 Content-Type: application/json
 {
   "id": 6,
@@ -42,3 +28,42 @@ Content-Type: application/json
   "category": "HOME",
   "dueDate": "2021-02-22"
 }
+
+//API - 5
+###
+PUT http://localhost:3000/todos/2/
+Content-Type: application/json
+{
+  "status": "DONE"
+}
+
+###
+PUT http://localhost:3000/todos/1/
+Content-Type: application/json
+{
+  "priority": "HIGH"
+}
+
+###
+PUT http://localhost:3000/todos/1/
+Content-Type: application/json
+{
+  "todo": "Clean the garden"
+}
+
+###
+PUT http://localhost:3000/todos/1/
+Content-Type: application/json
+{
+  "category": "LEARNING"
+}
+
+###
+PUT http://localhost:3000/todos/1/
+Content-Type: application/json
+{
+  "dueDate": "2021-01-12"
+}
+
+//API - 6 Delete Todo 
+DELETE http://localhost:3000/todos/3/
