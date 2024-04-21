@@ -11,11 +11,11 @@ GET http://localhost:3000/todos/?category=WORK&status=DONE
 ###GET http://localhost:3000/todos/?category=HOME
 
 //API -2 GET todo 
-###GET http://localhost:3000/todos/4/
+###GET http://localhost:3000/todos/6/
 
 //API -3 GET Agenda
 ###
-GET http://localhost:3000/agenda/?date=2021-12-12
+GET http://localhost:3000/agenda/
 
 //API - 4 POST todo
 POST http://localhost:3000/todos/
