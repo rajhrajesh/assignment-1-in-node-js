@@ -4,6 +4,7 @@ const {open} = require('sqlite')
 const sqlite3 = require('sqlite3')
 const isValid = require('date-fns/isValid')
 const format = require('date-fns/format')
+//const isMatch = require('date-fns/isMatch')
 const toDate = require('date-fns/toDate')
 const app = express()
 
@@ -143,7 +144,6 @@ const checkRequestsBody = async (request, response, next) => {
 
   if (dueDate !== undefined) {
     try {
-      const myDate = new Date(dueDate)
       const formatedDate = format(new Date(dueDate), 'yyyy-MM-dd')
       console.log(formatedDate)
       const result = toDate(new Date(formatedDate))
@@ -153,7 +153,7 @@ const checkRequestsBody = async (request, response, next) => {
       console.log(isValidDate)
 
       if (isValidDate === true) {
-        request.date = formatedDate
+        request.dueDate = formatedDate
       } else {
         response.status(400)
         response.send('Invalid Due Date')
@@ -174,11 +174,14 @@ const checkRequestsBody = async (request, response, next) => {
 
 app.get('/todos/', checkRequestsQueries, async (request, response) => {
   const {status = '', search_q = '', priority = '', category = ''} = request
+
   console.log(status, search_q, priority, category)
   const getTodosQuery = `
-  SELECT id, todo, priority, status, category, due_date AS dueDate FROM todo 
+  
+  SELECT id, todo, priority, category, status, due_date AS dueDate FROM todo
   WHERE todo LIKE '%${search_q}%' AND priority LIKE '%${priority}%' AND status LIKE '%${status}%'
-  AND category LIKE '%${category}%';`
+  AND category LIKE '%${category}%';
+  `
   const todosArray = await db.all(getTodosQuery)
   response.send(todosArray)
 })
@@ -200,16 +203,18 @@ app.get('/todos/:todoId/', checkRequestsQueries, async (request, response) => {
 app.get('/agenda/', checkRequestsQueries, async (request, response) => {
   const {date} = request
   console.log(date, 'a')
+
   const selectDueDateQuery = `
-  SELECT id, todo, priority, status, category, due_date AS dueDate FROM todo
-  WHERE due_date = ${date};
+  SELECT id, todo, category, priority, status, due_date AS dueDate FROM todo WHERE due_date = '${date}'
+
   `
-  const todosArray = await db.all(selectDueDateQuery)
-  if (todosArray === undefined) {
+  const todoArray = await db.all(selectDueDateQuery)
+
+  if (todoArray === undefined) {
     response.status(400)
     response.send('Invalid Due Date')
   } else {
-    response.send(todosArray)
+    response.send(todoArray)
   }
 })
 
@@ -218,8 +223,9 @@ app.get('/agenda/', checkRequestsQueries, async (request, response) => {
 app.post('/todos/', checkRequestsBody, async (request, response) => {
   const {id, todo, category, priority, status, dueDate} = request
   const addTodoQuery = `
-  INSERT INTO todo (id, todo, priority, status, category, due_date)
-  VALUES(${id}, ${todo}, ${priority}, ${status}, ${category}. ${dueDate})
+  INSERT INTO todo(id, todo, category, priority, status, due_date)
+  VALUES(${id}, '${todo}', '${category}', '${priority}', '${status}', '${dueDate}');
+
   `
   const createUser = await db.run(addTodoQuery)
   console.log(createUser)
@@ -230,41 +236,37 @@ app.post('/todos/', checkRequestsBody, async (request, response) => {
 
 app.put('/todos/:todoId/', checkRequestsBody, async (request, response) => {
   const {todoId} = request
-  const {priority, todo, status, category, dueDate} = request
+  const {todo, category, priority, status, dueDate} = request
   let updateTodoQuery = null
-  console.log(priority, todo, status, dueDate, category)
+  console.log(todo, category, priority, status, dueDate)
+
   switch (true) {
     case status !== undefined:
-      ;`UPDATE todo SET status = '${status}' WHERE id = ${todoId};
-    `
+      updateTodoQuery = `UPDATE todo SET status = '${status}' WHERE id = ${todoId}`
       await db.run(updateTodoQuery)
       response.send('Status Updated')
       break
 
     case priority !== undefined:
-      ;`UPDATE todo SET priority = '${priority}' WHERE id = ${todoId};    
-    `
+      updateTodoQuery = `UPDATE todo SET priority = '${priority}' WHERE id = ${todoId}`
       await db.run(updateTodoQuery)
       response.send('Priority Updated')
       break
 
-    case category !== undefined:
-      ;`UPDATE todo SET category = '${category}' WHERE id = ${todoId};    
-    `
-      await db.run(updateTodoQuery)
-      response.send('Category Updated')
-      break
-
     case todo !== undefined:
-      ;`UPDATE todo SET todo = '${todo}' WHERE id = ${todoId};    
-    `
+      updateTodoQuery = `UPDATE todo SET todo = '${todo}' WHERE id = ${todoId}`
       await db.run(updateTodoQuery)
       response.send('Todo Updated')
       break
 
+    case category !== undefined:
+      updateTodoQuery = `UPDATE todo SET category = '${category}' WHERE id = ${todoId}`
+      await db.run(updateTodoQuery)
+      response.send('Category Updated')
+      break
+
     case dueDate !== undefined:
-      ;`UPDATE todo SET due_date = '${dueDate}' WHERE id = ${todoId};    
-    `
+      updateTodoQuery = `UPDATE todo SET due_date = '${dueDate}' WHERE id = ${todoId}`
       await db.run(updateTodoQuery)
       response.send('Due Date Updated')
       break
