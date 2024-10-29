@@ -18,7 +18,7 @@ const initializeDBAndServer = async () => {
       filename: dbPath,
       driver: sqlite3.Database,
     })
-    app.listen(3000, () => {
+    app.listen(3001, () => {
       console.log('Server Running at http://localhost:3000/')
     })
   } catch (e) {
@@ -200,23 +200,54 @@ app.get('/todos/:todoId/', checkRequestsQueries, async (request, response) => {
 
 //API -3 GET Agenda
 
+// app.get('/agenda/', checkRequestsQueries, async (request, response) => {
+//   const {date} = request
+//   console.log(date, 'a')
+
+//   const selectDueDateQuery = `
+//   SELECT id, todo, category, priority, status, due_date AS dueDate FROM todo WHERE due_date = '${date}'
+
+//   `
+//   const todoArray = await db.all(selectDueDateQuery)
+
+//   if (todoArray === undefined) {
+//     response.status(400)
+//     response.send('Invalid Due Date')
+//   } else {
+//     response.send(todoArray)
+//   }
+// })
+
+// API -3 GET Agenda
 app.get('/agenda/', checkRequestsQueries, async (request, response) => {
-  const {date} = request
-  console.log(date, 'a')
-
-  const selectDueDateQuery = `
-  SELECT id, todo, category, priority, status, due_date AS dueDate FROM todo WHERE due_date = '${date}'
-
-  `
-  const todoArray = await db.all(selectDueDateQuery)
-
-  if (todoArray === undefined) {
-    response.status(400)
-    response.send('Invalid Due Date')
-  } else {
-    response.send(todoArray)
+  const { date } = request;  // Expecting date in 'yyyy-MM-dd' format from the middleware
+  
+  if (date === undefined) {
+    response.status(400);
+    response.send('Invalid Due Date');
+    return;
   }
-})
+
+  try {
+    const selectDueDateQuery = `
+      SELECT id, todo, category, priority, status, due_date AS dueDate 
+      FROM todo 
+      WHERE due_date = '${date}';
+    `;
+    const todoArray = await db.all(selectDueDateQuery);
+
+    if (todoArray.length === 0) {
+      response.status(404);
+      response.send('No Todos found for the given due date');
+    } else {
+      response.send(todoArray);
+    }
+  } catch (e) {
+    console.error(e.message);
+    response.status(500);
+    response.send('Server Error');
+  }
+});
 
 //API -4 POST todo
 
@@ -229,7 +260,7 @@ app.post('/todos/', checkRequestsBody, async (request, response) => {
   `
   const createUser = await db.run(addTodoQuery)
   console.log(createUser)
-  response.send('Todo Successfully Added')
+  response.send({ message: "Todo Successfully Added", todoDetails: { id, todo, priority, status, category, dueDate } });
 })
 
 //API -5 Update Todo
@@ -281,6 +312,6 @@ app.delete('/todos/:todoId/', async (request, response) => {
   DELETE FROM todo WHERE id = ${todoId}
   `
   await db.run(deleteTodoQuery)
-  response.send('Todo Deleted')
+  response.send({measage:'Todo Deleted',todoId : todoId})
 })
 module.exports = app

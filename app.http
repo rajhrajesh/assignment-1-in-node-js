@@ -18,16 +18,7 @@ GET http://localhost:3000/todos/?category=WORK&status=DONE
 GET http://localhost:3000/agenda/
 
 //API - 4 POST todo
-POST http://localhost:3000/todos/
-Content-Type: application/json
-{
-  "id": 6,
-  "todo": "Finalize event theme",
-  "priority": "LOW",
-  "status": "TO DO",
-  "category": "HOME",
-  "dueDate": "2021-02-22"
-}
+
 
 //API - 5
 ###

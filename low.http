@@ -1,0 +1,12 @@
+###
+POST http://localhost:3001/todos/
+Content-Type: application/json
+
+{
+  "id": 16,
+  "todo": "Finalize event theme",
+  "priority": "LOW",
+  "status": "TO DO",
+  "category": "HOME",
+  "dueDate": "2021-02-22"
+}
