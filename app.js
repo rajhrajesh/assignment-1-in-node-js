@@ -1,12 +1,16 @@
 const express = require('express')
+const dotenv = require("dotenv")
 const path = require('path')
-const {open} = require('sqlite')
+const { open } = require('sqlite')
 const sqlite3 = require('sqlite3')
 const isValid = require('date-fns/isValid')
 const format = require('date-fns/format')
 //const isMatch = require('date-fns/isMatch')
 const toDate = require('date-fns/toDate')
 const app = express()
+dotenv.config();
+
+const PORT = process.env.PORT_N || 5001
 
 app.use(express.json())
 const dbPath = path.join(__dirname, 'todoApplication.db')
@@ -18,8 +22,8 @@ const initializeDBAndServer = async () => {
       filename: dbPath,
       driver: sqlite3.Database,
     })
-    app.listen(3001, () => {
-      console.log('Server Running at http://localhost:3000/')
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`)
     })
   } catch (e) {
     console.log(`DB Error: ${e.message}`)
@@ -29,8 +33,8 @@ const initializeDBAndServer = async () => {
 initializeDBAndServer()
 
 const checkRequestsQueries = async (request, response, next) => {
-  const {search_q, category, priority, status, date} = request.query
-  const {todoId} = request.params
+  const { search_q, category, priority, status, date } = request.query
+  const { todoId } = request.params
   if (category !== undefined) {
     const categoryArray = ['WORK', 'HOME', 'LEARNING']
     const categoryIsInArray = categoryArray.includes(category)
@@ -74,8 +78,7 @@ const checkRequestsQueries = async (request, response, next) => {
       console.log(formatedDate, 'f')
       const result = toDate(
         new Date(
-          `${myDate.getFullYear()}-${
-            myDate.getMonth() + 1
+          `${myDate.getFullYear()}-${myDate.getMonth() + 1
           }-${myDate.getDate()}`,
         ),
       )
@@ -103,8 +106,8 @@ const checkRequestsQueries = async (request, response, next) => {
 }
 
 const checkRequestsBody = async (request, response, next) => {
-  const {id, todo, category, priority, status, dueDate} = request.body
-  const {todoId} = request.params
+  const { id, todo, category, priority, status, dueDate } = request.body
+  const { todoId } = request.params
 
   if (category !== undefined) {
     categoryArray = ['WORK', 'HOME', 'LEARNING']
@@ -173,7 +176,7 @@ const checkRequestsBody = async (request, response, next) => {
 //API-1 GET Todos
 
 app.get('/todos/', checkRequestsQueries, async (request, response) => {
-  const {status = '', search_q = '', priority = '', category = ''} = request
+  const { status = '', search_q = '', priority = '', category = '' } = request
 
   console.log(status, search_q, priority, category)
   const getTodosQuery = `
@@ -189,7 +192,7 @@ app.get('/todos/', checkRequestsQueries, async (request, response) => {
 //API-2 GET Todo
 
 app.get('/todos/:todoId/', checkRequestsQueries, async (request, response) => {
-  const {todoId} = request
+  const { todoId } = request
   const getTodoQuery = `
   SELECT id, todo, priority, status, category, due_date AS dueDate FROM todo
   WHERE id = ${todoId};
@@ -221,7 +224,7 @@ app.get('/todos/:todoId/', checkRequestsQueries, async (request, response) => {
 // API -3 GET Agenda
 app.get('/agenda/', checkRequestsQueries, async (request, response) => {
   const { date } = request;  // Expecting date in 'yyyy-MM-dd' format from the middleware
-  
+
   if (date === undefined) {
     response.status(400);
     response.send('Invalid Due Date');
@@ -252,7 +255,7 @@ app.get('/agenda/', checkRequestsQueries, async (request, response) => {
 //API -4 POST todo
 
 app.post('/todos/', checkRequestsBody, async (request, response) => {
-  const {id, todo, category, priority, status, dueDate} = request
+  const { id, todo, category, priority, status, dueDate } = request
   const addTodoQuery = `
   INSERT INTO todo(id, todo, category, priority, status, due_date)
   VALUES(${id}, '${todo}', '${category}', '${priority}', '${status}', '${dueDate}');
@@ -266,8 +269,8 @@ app.post('/todos/', checkRequestsBody, async (request, response) => {
 //API -5 Update Todo
 
 app.put('/todos/:todoId/', checkRequestsBody, async (request, response) => {
-  const {todoId} = request
-  const {todo, category, priority, status, dueDate} = request
+  const { todoId } = request
+  const { todo, category, priority, status, dueDate } = request
   let updateTodoQuery = null
   console.log(todo, category, priority, status, dueDate)
 
@@ -307,11 +310,11 @@ app.put('/todos/:todoId/', checkRequestsBody, async (request, response) => {
 //API -6 Delete Todo
 
 app.delete('/todos/:todoId/', async (request, response) => {
-  const {todoId} = request.params
+  const { todoId } = request.params
   const deleteTodoQuery = `
   DELETE FROM todo WHERE id = ${todoId}
   `
   await db.run(deleteTodoQuery)
-  response.send({measage:'Todo Deleted',todoId : todoId})
+  response.send({ measage: 'Todo Deleted', todoId: todoId })
 })
 module.exports = app
